@@ -1,0 +1,14 @@
+version: "3.2"
+services:
+  go_chat:
+    container_name: go_chat
+    restart: always
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    ports:
+      - 8000:8000
+    build:
+      context: .
+      dockerfile: dev.dockerfile
+    volumes:
+      - .:/app
