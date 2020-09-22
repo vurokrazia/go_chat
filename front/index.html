@@ -10,7 +10,7 @@
 </head>
 
 <body>
-  <div class="container">
+  <div class="container" id="nickname">
     <div class="registro">
       <form action="#" id="form_registro" onsubmit="return mySubmitFunction(event)">
         <label for="user_name">Nickname</label>
@@ -19,6 +19,17 @@
       </form>
     </div>
   </div>
+
+  <div id="container_chat" style="display: none;">
+    <div class="chat">
+      <div id="chat_zone">
+        <textarea id="chat_area" cols="70" rows="20"></textarea>
+        <input type="text" name="msg" id="msg" class="form-control" >
+        <input type="submit" id="send" class="btn btn-primary" onclick="send_msg()">
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>

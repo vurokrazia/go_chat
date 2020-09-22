@@ -17,6 +17,7 @@ type Response struct {
 
 type User struct {
 	User_Name string
+	WebSocket *websocket.Conn
 }
 
 var Users = struct {
@@ -71,10 +72,66 @@ func Validate(w http.ResponseWriter, r *http.Request)  {
 	json.NewEncoder(w).Encode(response)
 }
 
+func CreateUser(user_name string, ws *websocket.Conn) User {
+	return User{user_name, ws}
+}
+
+func AddUser(user User){
+	Users.Lock()
+	defer Users.Unlock()
+	Users.m[user.User_Name] = user 
+}
+
+func RemoveUser(user_name string)  {
+	Users.Lock()
+	defer Users.Unlock()
+	log.Println("Bye user")
+	delete(Users.m, user_name)
+}
+
+func SendMessage(type_message int, message [] byte)  {
+	Users.RLock()
+	defer Users.RUnlock()
+	for _, user := range Users.m{
+		user.WebSocket.WriteMessage(type_message, message)
+		if err := user.WebSocket.WriteMessage(type_message, message); err != nil {
+			log.Println("Error message")
+			return
+		} else {
+			log.Println(user.User_Name)
+			log.Println(string(message))
+		}
+	}
+}
+
+func ToArrayByte(value string) [] byte {
+	return []byte(value)
+}
+
+func ConcatMessage(user_name string, array []byte) string {
+	return user_name + ":" + string(array)
+}
+
 func WebSocket(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	user_name := vars["user_name"]
+
 	ws, err := websocket.Upgrade(w,r,nil,1024,1024)
 	if err != nil {
 		log.Println("Error")
+	}
+
+	current_user := CreateUser(user_name,ws)
+	AddUser(current_user)
+	log.Println("New user registered")
+	for{
+		type_message, message, err := ws.ReadMessage()
+		if err != nil {
+			RemoveUser(user_name)
+			return
+		}
+		final_message := ConcatMessage(user_name, message)
+		SendMessage(type_message, ToArrayByte(final_message))
 	}
 }
 
