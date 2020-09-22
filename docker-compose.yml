@@ -10,5 +10,6 @@ services:
     build:
       context: .
       dockerfile: dev.dockerfile
+    command: "go run server.go"
     volumes:
       - .:/app
